@@ -4,7 +4,7 @@ default:
   cache: {}
 
 build:
-  srage: build
+  stage: build
   script:
     - ./do build make push
   only:
