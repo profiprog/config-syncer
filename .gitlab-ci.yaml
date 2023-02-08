@@ -1,0 +1,14 @@
+
+default:
+  tags: [ 'docker-admin' ]
+  cache: {}
+
+build:
+  srage: build
+  script:
+    - ./do build make push
+  only:
+    refs:
+      - tags
+    variables:
+      - $CI_COMMIT_REF_PROTECTED == "true"

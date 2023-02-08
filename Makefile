@@ -19,6 +19,8 @@ GO_PKG   := kubeops.dev
 REPO     := $(notdir $(shell pwd))
 BIN      := kubed
 COMPRESS ?= no
+WORKDIR  ?= "$$(pwd)"
+
 
 CRD_OPTIONS          ?= "crd:allowDangerousTypes=true"
 CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.21
@@ -142,7 +144,7 @@ gen-chart-doc-%:
 	@docker run --rm 	                                 \
 		-u $$(id -u):$$(id -g)                           \
 		-v /tmp:/.cache                                  \
-		-v $$(pwd):$(DOCKER_REPO_ROOT)                   \
+		-v $(WORKDIR):$(DOCKER_REPO_ROOT)                   \
 		-w $(DOCKER_REPO_ROOT)                           \
 		--env HTTP_PROXY=$(HTTP_PROXY)                   \
 		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
@@ -153,21 +155,21 @@ gen-chart-doc-%:
 gen: gen-chart-doc
 
 fmt: $(BUILD_DIRS)
-	@docker run                                                 \
-	    -i                                                      \
-	    --rm                                                    \
-	    -u $$(id -u):$$(id -g)                                  \
-	    -v $$(pwd):/src                                         \
-	    -w /src                                                 \
-	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
-	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
-	    -v $$(pwd)/.go/cache:/.cache                            \
-	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
-	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
-	    $(BUILD_IMAGE)                                          \
-	    /bin/bash -c "                                          \
-	        REPO_PKG=$(GO_PKG)                                  \
-	        ./hack/fmt.sh $(SRC_DIRS)                           \
+	@docker run                                                    \
+	    -i                                                         \
+	    --rm                                                       \
+	    -u $$(id -u):$$(id -g)                                     \
+	    -v $(WORKDIR):/src                                         \
+	    -w /src                                                    \
+	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $(WORKDIR)/.go/cache:/.cache                            \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                             \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                           \
+	    $(BUILD_IMAGE)                                             \
+	    /bin/bash -c "                                             \
+	        REPO_PKG=$(GO_PKG)                                     \
+	        ./hack/fmt.sh $(SRC_DIRS)                              \
 	    "
 
 build: $(OUTBIN)
@@ -183,44 +185,44 @@ $(OUTBIN): .go/$(OUTBIN).stamp
 .PHONY: .go/$(OUTBIN).stamp
 .go/$(OUTBIN).stamp: $(BUILD_DIRS)
 	@echo "making $(OUTBIN)"
-	@docker run                                                 \
-	    -i                                                      \
-	    --rm                                                    \
-	    -u $$(id -u):$$(id -g)                                  \
-	    -v $$(pwd):/src                                         \
-	    -w /src                                                 \
-	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
-	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
-	    -v $$(pwd)/.go/cache:/.cache                            \
-	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
-	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
-	    $(BUILD_IMAGE)                                          \
-	    /bin/bash -c "                                          \
-	        ARCH=$(ARCH)                                        \
-	        OS=$(OS)                                            \
-	        VERSION=$(VERSION)                                  \
-	        version_strategy=$(version_strategy)                \
-	        git_branch=$(git_branch)                            \
-	        git_tag=$(git_tag)                                  \
-	        commit_hash=$(commit_hash)                          \
-	        commit_timestamp=$(commit_timestamp)                \
-	        ./hack/build.sh                                     \
+	@docker run                                                    \
+	    -i                                                         \
+	    --rm                                                       \
+	    -u $$(id -u):$$(id -g)                                     \
+	    -v $(WORKDIR):/src                                         \
+	    -w /src                                                    \
+	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $(WORKDIR)/.go/cache:/.cache                            \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                             \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                           \
+	    $(BUILD_IMAGE)                                             \
+	    /bin/bash -c "                                             \
+	        ARCH=$(ARCH)                                           \
+	        OS=$(OS)                                               \
+	        VERSION=$(VERSION)                                     \
+	        version_strategy=$(version_strategy)                   \
+	        git_branch=$(git_branch)                               \
+	        git_tag=$(git_tag)                                     \
+	        commit_hash=$(commit_hash)                             \
+	        commit_timestamp=$(commit_timestamp)                   \
+	        ./hack/build.sh                                        \
 	    "
-	@if [ $(COMPRESS) = yes ] && [ $(OS) != darwin ]; then          \
-		echo "compressing $(OUTBIN)";                               \
-		@docker run                                                 \
-		    -i                                                      \
-		    --rm                                                    \
-		    -u $$(id -u):$$(id -g)                                  \
-		    -v $$(pwd):/src                                         \
-		    -w /src                                                 \
-		    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
-		    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
-		    -v $$(pwd)/.go/cache:/.cache                            \
-		    --env HTTP_PROXY=$(HTTP_PROXY)                          \
-		    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
-		    $(BUILD_IMAGE)                                          \
-		    upx --brute /go/$(OUTBIN);                              \
+	@if [ $(COMPRESS) = yes ] && [ $(OS) != darwin ]; then             \
+		echo "compressing $(OUTBIN)";                                  \
+		@docker run                                                    \
+		    -i                                                         \
+		    --rm                                                       \
+		    -u $$(id -u):$$(id -g)                                     \
+		    -v $(WORKDIR):/src                                         \
+		    -w /src                                                    \
+		    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+		    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+		    -v $(WORKDIR)/.go/cache:/.cache                            \
+		    --env HTTP_PROXY=$(HTTP_PROXY)                             \
+		    --env HTTPS_PROXY=$(HTTPS_PROXY)                           \
+		    $(BUILD_IMAGE)                                             \
+		    upx --brute /go/$(OUTBIN);                                 \
 	fi
 	@if ! cmp -s .go/$(OUTBIN) $(OUTBIN); then \
 	    mv .go/$(OUTBIN) $(OUTBIN);            \
@@ -246,7 +248,7 @@ bin/.container-$(DOTFILE_IMAGE)-%: bin/$(OS)_$(ARCH)/$(BIN) $(DOCKERFILE_%)
 
 push: bin/.push-$(DOTFILE_IMAGE)-PROD bin/.push-$(DOTFILE_IMAGE)-DBG
 bin/.push-$(DOTFILE_IMAGE)-%: bin/.container-$(DOTFILE_IMAGE)-%
-	@docker push $(IMAGE):$(TAG_$*)
+	docker push $(IMAGE):$(TAG_$*)
 	@echo "pushed: $(IMAGE):$(TAG_$*)"
 	@echo
 
@@ -260,23 +262,23 @@ docker-manifest-%:
 test: unit-tests e2e-tests
 
 unit-tests: $(BUILD_DIRS)
-	@docker run                                                 \
-	    -i                                                      \
-	    --rm                                                    \
-	    -u $$(id -u):$$(id -g)                                  \
-	    -v $$(pwd):/src                                         \
-	    -w /src                                                 \
-	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
-	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
-	    -v $$(pwd)/.go/cache:/.cache                            \
-	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
-	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
-	    $(BUILD_IMAGE)                                          \
-	    /bin/bash -c "                                          \
-	        ARCH=$(ARCH)                                        \
-	        OS=$(OS)                                            \
-	        VERSION=$(VERSION)                                  \
-	        ./hack/test.sh $(SRC_PKGS)                          \
+	@docker run                                                    \
+	    -i                                                         \
+	    --rm                                                       \
+	    -u $$(id -u):$$(id -g)                                     \
+	    -v $(WORKDIR):/src                                         \
+	    -w /src                                                    \
+	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $(WORKDIR)/.go/cache:/.cache                            \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                             \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                           \
+	    $(BUILD_IMAGE)                                             \
+	    /bin/bash -c "                                             \
+	        ARCH=$(ARCH)                                           \
+	        OS=$(OS)                                               \
+	        VERSION=$(VERSION)                                     \
+	        ./hack/test.sh $(SRC_PKGS)                             \
 	    "
 
 # - e2e-tests can hold both ginkgo args (as GINKGO_ARGS) and program/test args (as TEST_ARGS).
@@ -296,19 +298,19 @@ e2e-tests: $(BUILD_DIRS)
 	    -i                                                      \
 	    --rm                                                    \
 	    -u $$(id -u):$$(id -g)                                  \
-	    -v $$(pwd):/src                                         \
+	    -v $(WORKDIR):/src                                         \
 	    -w /src                                                 \
 	    --net=host                                              \
 	    -v $(HOME)/.kube:/.kube                                 \
 	    -v $(HOME)/.minikube:$(HOME)/.minikube                  \
 	    -v $(HOME)/.credentials:$(HOME)/.credentials            \
-	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
-	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
-	    -v $$(pwd)/.go/cache:/.cache                            \
+	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $(WORKDIR)/.go/cache:/.cache                            \
 	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
 	    --env KUBECONFIG=$(KUBECONFIG)                          \
-	    --env-file=$$(pwd)/hack/config/.env                     \
+	    --env-file=$(WORKDIR)/hack/config/.env                     \
 	    $(BUILD_IMAGE)                                          \
 	    /bin/bash -c "                                          \
 	        ARCH=$(ARCH)                                        \
@@ -331,15 +333,15 @@ ct: $(BUILD_DIRS)
 	@docker run                                                 \
 	    -i                                                      \
 	    --rm                                                    \
-	    -v $$(pwd):/src                                         \
+	    -v $(WORKDIR):/src                                         \
 	    -w /src                                                 \
 	    --net=host                                              \
 	    -v $(HOME)/.kube:/.kube                                 \
 	    -v $(HOME)/.minikube:$(HOME)/.minikube                  \
 	    -v $(HOME)/.credentials:$(HOME)/.credentials            \
-	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
-	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
-	    -v $$(pwd)/.go/cache:/.cache                            \
+	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $(WORKDIR)/.go/cache:/.cache                            \
 	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
 	    --env KUBECONFIG=$(subst $(HOME),,$(KUBECONFIG))        \
@@ -355,11 +357,11 @@ lint: $(BUILD_DIRS)
 	    -i                                                      \
 	    --rm                                                    \
 	    -u $$(id -u):$$(id -g)                                  \
-	    -v $$(pwd):/src                                         \
+	    -v $(WORKDIR):/src                                         \
 	    -w /src                                                 \
-	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
-	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
-	    -v $$(pwd)/.go/cache:/.cache                            \
+	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $(WORKDIR)/.go/cache:/.cache                            \
 	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
 	    --env GO111MODULE=on                                    \
@@ -421,7 +423,7 @@ add-license:
 	@docker run --rm 	                                 \
 		-u $$(id -u):$$(id -g)                           \
 		-v /tmp:/.cache                                  \
-		-v $$(pwd):$(DOCKER_REPO_ROOT)                   \
+		-v $(WORKDIR):$(DOCKER_REPO_ROOT)                   \
 		-w $(DOCKER_REPO_ROOT)                           \
 		--env HTTP_PROXY=$(HTTP_PROXY)                   \
 		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
@@ -434,7 +436,7 @@ check-license:
 	@docker run --rm 	                                 \
 		-u $$(id -u):$$(id -g)                           \
 		-v /tmp:/.cache                                  \
-		-v $$(pwd):$(DOCKER_REPO_ROOT)                   \
+		-v $(WORKDIR):$(DOCKER_REPO_ROOT)                   \
 		-w $(DOCKER_REPO_ROOT)                           \
 		--env HTTP_PROXY=$(HTTP_PROXY)                   \
 		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
