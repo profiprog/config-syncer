@@ -144,7 +144,7 @@ gen-chart-doc-%:
 	@docker run --rm 	                                 \
 		-u $$(id -u):$$(id -g)                           \
 		-v /tmp:/.cache                                  \
-		-v $(WORKDIR):$(DOCKER_REPO_ROOT)                   \
+		-v $(WORKDIR):$(DOCKER_REPO_ROOT)                \
 		-w $(DOCKER_REPO_ROOT)                           \
 		--env HTTP_PROXY=$(HTTP_PROXY)                   \
 		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
@@ -294,34 +294,34 @@ TEST_ARGS   ?=
 
 .PHONY: e2e-tests
 e2e-tests: $(BUILD_DIRS)
-	@docker run                                                 \
-	    -i                                                      \
-	    --rm                                                    \
-	    -u $$(id -u):$$(id -g)                                  \
+	@docker run                                                    \
+	    -i                                                         \
+	    --rm                                                       \
+	    -u $$(id -u):$$(id -g)                                     \
 	    -v $(WORKDIR):/src                                         \
-	    -w /src                                                 \
-	    --net=host                                              \
-	    -v $(HOME)/.kube:/.kube                                 \
-	    -v $(HOME)/.minikube:$(HOME)/.minikube                  \
-	    -v $(HOME)/.credentials:$(HOME)/.credentials            \
+	    -w /src                                                    \
+	    --net=host                                                 \
+	    -v $(HOME)/.kube:/.kube                                    \
+	    -v $(HOME)/.minikube:$(HOME)/.minikube                     \
+	    -v $(HOME)/.credentials:$(HOME)/.credentials               \
 	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin                \
 	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
 	    -v $(WORKDIR)/.go/cache:/.cache                            \
-	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
-	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
-	    --env KUBECONFIG=$(KUBECONFIG)                          \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                             \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                           \
+	    --env KUBECONFIG=$(KUBECONFIG)                             \
 	    --env-file=$(WORKDIR)/hack/config/.env                     \
-	    $(BUILD_IMAGE)                                          \
-	    /bin/bash -c "                                          \
-	        ARCH=$(ARCH)                                        \
-	        OS=$(OS)                                            \
-	        VERSION=$(VERSION)                                  \
-	        DOCKER_REGISTRY=$(REGISTRY)                         \
-	        TAG=$(TAG)                                          \
-	        KUBECONFIG=$${KUBECONFIG#$(HOME)}                   \
-	        GINKGO_ARGS='$(GINKGO_ARGS)'                        \
-	        TEST_ARGS='$(TEST_ARGS)'                            \
-	        ./hack/e2e.sh                                       \
+	    $(BUILD_IMAGE)                                             \
+	    /bin/bash -c "                                             \
+	        ARCH=$(ARCH)                                           \
+	        OS=$(OS)                                               \
+	        VERSION=$(VERSION)                                     \
+	        DOCKER_REGISTRY=$(REGISTRY)                            \
+	        TAG=$(TAG)                                             \
+	        KUBECONFIG=$${KUBECONFIG#$(HOME)}                      \
+	        GINKGO_ARGS='$(GINKGO_ARGS)'                           \
+	        TEST_ARGS='$(TEST_ARGS)'                               \
+	        ./hack/e2e.sh                                          \
 	    "
 
 .PHONY: e2e-parallel
@@ -330,22 +330,22 @@ e2e-parallel:
 
 .PHONY: ct
 ct: $(BUILD_DIRS)
-	@docker run                                                 \
-	    -i                                                      \
-	    --rm                                                    \
+	@docker run                                                    \
+	    -i                                                         \
+	    --rm                                                       \
 	    -v $(WORKDIR):/src                                         \
-	    -w /src                                                 \
-	    --net=host                                              \
-	    -v $(HOME)/.kube:/.kube                                 \
-	    -v $(HOME)/.minikube:$(HOME)/.minikube                  \
-	    -v $(HOME)/.credentials:$(HOME)/.credentials            \
+	    -w /src                                                    \
+	    --net=host                                                 \
+	    -v $(HOME)/.kube:/.kube                                    \
+	    -v $(HOME)/.minikube:$(HOME)/.minikube                     \
+	    -v $(HOME)/.credentials:$(HOME)/.credentials               \
 	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin                \
 	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
 	    -v $(WORKDIR)/.go/cache:/.cache                            \
-	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
-	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
-	    --env KUBECONFIG=$(subst $(HOME),,$(KUBECONFIG))        \
-	    $(CHART_TEST_IMAGE)                                     \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                             \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                           \
+	    --env KUBECONFIG=$(subst $(HOME),,$(KUBECONFIG))           \
+	    $(CHART_TEST_IMAGE)                                        \
 	    ct lint-and-install --all
 
 ADDTL_LINTERS   := goconst,gofmt,goimports,unparam
@@ -353,20 +353,20 @@ ADDTL_LINTERS   := goconst,gofmt,goimports,unparam
 .PHONY: lint
 lint: $(BUILD_DIRS)
 	@echo "running linter"
-	@docker run                                                 \
-	    -i                                                      \
-	    --rm                                                    \
-	    -u $$(id -u):$$(id -g)                                  \
+	@docker run                                                    \
+	    -i                                                         \
+	    --rm                                                       \
+	    -u $$(id -u):$$(id -g)                                     \
 	    -v $(WORKDIR):/src                                         \
-	    -w /src                                                 \
+	    -w /src                                                    \
 	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin                \
 	    -v $(WORKDIR)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
 	    -v $(WORKDIR)/.go/cache:/.cache                            \
-	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
-	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
-	    --env GO111MODULE=on                                    \
-	    --env GOFLAGS="-mod=vendor"                             \
-	    $(BUILD_IMAGE)                                          \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                             \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                           \
+	    --env GO111MODULE=on                                       \
+	    --env GOFLAGS="-mod=vendor"                                \
+	    $(BUILD_IMAGE)                                             \
 	    golangci-lint run --enable $(ADDTL_LINTERS) --timeout=10m --skip-files="generated.*\.go$\" --skip-dirs-use-default --skip-dirs=client,vendor
 
 $(BUILD_DIRS):
@@ -423,7 +423,7 @@ add-license:
 	@docker run --rm 	                                 \
 		-u $$(id -u):$$(id -g)                           \
 		-v /tmp:/.cache                                  \
-		-v $(WORKDIR):$(DOCKER_REPO_ROOT)                   \
+		-v $(WORKDIR):$(DOCKER_REPO_ROOT)                \
 		-w $(DOCKER_REPO_ROOT)                           \
 		--env HTTP_PROXY=$(HTTP_PROXY)                   \
 		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
@@ -436,7 +436,7 @@ check-license:
 	@docker run --rm 	                                 \
 		-u $$(id -u):$$(id -g)                           \
 		-v /tmp:/.cache                                  \
-		-v $(WORKDIR):$(DOCKER_REPO_ROOT)                   \
+		-v $(WORKDIR):$(DOCKER_REPO_ROOT)                \
 		-w $(DOCKER_REPO_ROOT)                           \
 		--env HTTP_PROXY=$(HTTP_PROXY)                   \
 		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
